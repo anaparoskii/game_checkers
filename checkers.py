@@ -259,7 +259,7 @@ class Checkers(object):
             letter = "A"
         elif letter == "b" and move[3] == 7:
             letter = "B"
-        board[move[3]][move[4]] = letter + str(move[1]) + str(move[2])
+        board[move[3]][move[4]] = letter + move[0][1] + move[0][2]
         if abs(move[1] - move[3]) == 2:
             board[(move[1] + move[3]) // 2][(move[2] + move[4]) // 2] = "---"
         board[move[1]][move[2]] = "---"

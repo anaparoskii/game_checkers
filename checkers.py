@@ -98,22 +98,31 @@ class Checkers(object):
             letter = "a"
             if board[m][n][0].lower() != letter:
                 return False
-            if Checkers.check_moves(board, letter, m, n, m-1, n+1):
+            if m - 1 < 0 or n - 1 < 0:
+                return False
+            if board[m-1][n-1] == "---":
                 return True
-            if Checkers.check_moves(board, letter, m, n, m-1, n-1):
+            if n + 1 > 7:
+                return False
+            if board[m-1][n+1] == "---":
                 return True
-            if Checkers.check_jumps(board, letter, m, n, m-1, n+1, m-2, n+2):
+            if m - 2 < 0 or n - 2 < 0:
+                return False
+            if board[m-2][n-2] == "---" and board[m-1][n-1][0].lower() == "b":
                 return True
-            if Checkers.check_jumps(board, letter, m, n, m-1, n-1, m-2, n-2):
+            if n + 2 > 7:
+                return False
+            if board[m-2][n+2] == "---" and board[m-1][n+1][0].lower() == "b":
                 return True
             if board[m][n][0] == "A":
-                if Checkers.check_moves(board, letter, m, n, m+1, n-1):
+                if m + 1 < 0:
+                    return False
+                if board[m + 1][n - 1] == "---" or board[m + 1][n + 1] == "---":
                     return True
-                if Checkers.check_moves(board, letter, m, n, m+1, n+1):
-                    return True
-                if Checkers.check_jumps(board, letter, m, n, m+1, n-1, m+2, n-2):
-                    return True
-                if Checkers.check_jumps(board, letter, m, n, m+1, n+1, m+2, n+2):
+                if m + 2 < 0:
+                    return False
+                if (board[m + 2][n - 2] == "---" and board[m + 1][n - 1][0].lower() == "b"
+                        or board[m + 2][n + 2] == "---" and board[m + 1][n + 1][0].lower() == "b"):
                     return True
                 return False
             return False
@@ -161,8 +170,15 @@ class Checkers(object):
                 print(ANSI_MAGENTA + "Game ended!" + ANSI_RESET)
                 exit()
             elif choice.lower() == "s":
-                print(ANSI_RED + "You surrendered! Coward..." + ANSI_RESET)
-                exit()
+                while True:
+                    choice = input("Are you sure you want to surrender? [Y/N]: ")
+                    if choice.lower() == "y":
+                        print(ANSI_RED + "You surrendered! Coward move..." + ANSI_RESET)
+                        exit()
+                    elif choice.lower() == "n":
+                        break
+                    else:
+                        print("Invalid choice! Please try again.")
             elif choice.isdigit():
                 choice = int(choice)
                 if 0 <= choice < len(available_moves):
@@ -267,8 +283,15 @@ class Checkers(object):
                 print(ANSI_MAGENTA + "Game ended!" + ANSI_RESET)
                 exit()
             elif choice.lower() == "s":
-                print(ANSI_RED + "You surrendered! Coward..." + ANSI_RESET)
-                exit()
+                while True:
+                    choice = input("Are you sure you want to surrender? [Y/N]: ")
+                    if choice.lower() == "y":
+                        print(ANSI_RED + "You surrendered before the game even started!" + ANSI_RESET)
+                        exit()
+                    elif choice.lower() == "n":
+                        break
+                    else:
+                        print("Invalid choice! Please try again.")
             else:
                 print("Invalid choice! Please try again.")
         while True:
@@ -329,13 +352,10 @@ class Checkers(object):
                         result += 10
                     if i == 0 or i == 7 or j == 0 or j == 7:
                         result += 10
-                    if i+1 > 7 or j+1 > 7 or i - 1 < 0 or j - 1 < 0:
+                    if i + 1 > 7 or j + 1 > 7 or i - 1 < 0 or j - 1 < 0:
                         continue
-                    if i+2 > 7 or j + 2 > 7 or i - 2 < 0 or j - 2 < 0:
+                    if i + 2 > 7 or j + 2 > 7 or i - 2 < 0 or j - 2 < 0:
                         continue
-                    if ((board[i][j][0] == "b" and board[i+1][j-1][0].lower() == "a" and board[i+2][j-2] == "---")
-                            or (board[i+1][j+1][0].lower() == "a" and board[i+2][j+2] == "---")):
-                        result += 5
                     if ((board[i][j][0] == "B" and board[i-1][j-1][0].lower() == "a" and board[i-2][j-2] == "---")
                             or (board[i-1][j+1][0].lower() == "a" and board[i-2][j+2] == "---")):
                         result += 5
@@ -347,9 +367,7 @@ class Checkers(object):
                         result -= 3
                     if (board[i+1][j+1][0].lower() == "b" or board[i+1][j-1][0].lower() == "b"
                             or board[i-1][j+1][0].lower() == "b" or board[i-1][j-1][0].lower() == "b"):
-                        result += 6
-                    if board[i+1][j+1][0] == "B" or board[i+1][j-1][0] == "B":
-                        result += 10
+                        result += 8
         return result + (computer - opponent) * 100
 
 

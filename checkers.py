@@ -42,7 +42,7 @@ class Checkers(object):
 
         for row in self.matrix:
             for i in range(8):
-                row.append("---")
+                row.append(" . ")
         self.position_computer()
         self.position_player()
 
@@ -106,7 +106,7 @@ class Checkers(object):
             for elem in row:
                 j += 1
                 if pawn in elem:
-                    print(Color.BLUE + pawn + Color.RESET, end=" ")
+                    print(Color.BLUE + pawn + Color.RESET, end="  ")
                 else:
                     for move in moves:
                         if move[3] == k - 1 and move[4] == j - 1:
@@ -133,7 +133,7 @@ class Checkers(object):
     def get_depth(available_moves):
         if len(available_moves) == 1:
             return 0
-        elif len(available_moves) >= 7:
+        elif len(available_moves) > 6:
             return 3
         else:
             return 5
@@ -149,9 +149,6 @@ class Checkers(object):
         dictionary = {}
         for i in range(len(available_moves)):
             child = available_moves[i]
-            if (i != 0 and
-                    Checkers.heuristic(child.get_board()) <= Checkers.heuristic(available_moves[i - 1].get_board())):
-                continue
             value = Checkers.minimax(child.get_board(), -inf, inf, depth, False, self.mandatory_jump)
             dictionary[value] = child
         new_board = dictionary[max(dictionary.keys())].get_board()
@@ -190,19 +187,19 @@ class Checkers(object):
     @staticmethod
     def double_jump(board, move, mandatory_jump):
         available_jumps = []
-        if Checkers.has_available_jumps(board, "w", move[3], move[4],
-                                        move[3] - 1, move[4] - 1, move[3] - 2, move[4] - 2):
-            available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3]-2, move[4]-2])
-        if Checkers.has_available_jumps(board, "w", move[3], move[4],
-                                        move[3] - 1, move[4] + 1, move[3] - 2, move[4] + 2):
-            available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3]-2, move[4]+2])
+        if Checkers.available_jump(board, "w", move[3], move[4],
+                                   move[3] - 1, move[4] - 1, move[3] - 2, move[4] - 2):
+            available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3] - 2, move[4] - 2])
+        if Checkers.available_jump(board, "w", move[3], move[4],
+                                   move[3] - 1, move[4] + 1, move[3] - 2, move[4] + 2):
+            available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3] - 2, move[4] + 2])
         if board[move[3]][move[4]][0] == "W":
-            if Checkers.has_available_jumps(board, "w", move[3], move[4],
-                                            move[3] + 1, move[4] - 1, move[3] + 2, move[4] - 2):
-                available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3]+2, move[4]-2])
-            if Checkers.has_available_jumps(board, "w", move[3], move[4],
-                                            move[3] + 1, move[4] + 1, move[3] + 2, move[4] + 2):
-                available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3]+2, move[4]+2])
+            if Checkers.available_jump(board, "w", move[3], move[4],
+                                       move[3] + 1, move[4] - 1, move[3] + 2, move[4] - 2):
+                available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3] + 2, move[4] - 2])
+            if Checkers.available_jump(board, "w", move[3], move[4],
+                                       move[3] + 1, move[4] + 1, move[3] + 2, move[4] + 2):
+                available_jumps.append([board[move[3]][move[4]], move[3], move[4], move[3] + 2, move[4] + 2])
         if len(available_jumps) == 0:
             return False
         state = deepcopy(board)
@@ -346,23 +343,23 @@ class Checkers(object):
         for m in range(8):
             for n in range(8):
                 if (player_turn and board[m][n][0].lower() == "w") or (not player_turn and board[m][n][0] == "B"):
-                    if Checkers.has_available_moves(board, letter, m, n, m - 1, n + 1):
-                        available_moves.append([board[m][n], m, n, m-1, n+1])
-                    if Checkers.has_available_moves(board, letter, m, n, m - 1, n - 1):
-                        available_moves.append([board[m][n], m, n, m-1, n-1])
-                    if Checkers.has_available_jumps(board, letter, m, n, m - 1, n + 1, m - 2, n + 2):
-                        available_jumps.append([board[m][n], m, n, m-2, n+2])
-                    if Checkers.has_available_jumps(board, letter, m, n, m - 1, n - 1, m - 2, n - 2):
-                        available_jumps.append([board[m][n], m, n, m-2, n-2])
+                    if Checkers.available_move(board, letter, m, n, m - 1, n + 1):
+                        available_moves.append([board[m][n], m, n, m - 1, n + 1])
+                    if Checkers.available_move(board, letter, m, n, m - 1, n - 1):
+                        available_moves.append([board[m][n], m, n, m - 1, n - 1])
+                    if Checkers.available_jump(board, letter, m, n, m - 1, n + 1, m - 2, n + 2):
+                        available_jumps.append([board[m][n], m, n, m - 2, n + 2])
+                    if Checkers.available_jump(board, letter, m, n, m - 1, n - 1, m - 2, n - 2):
+                        available_jumps.append([board[m][n], m, n, m - 2, n - 2])
                 if (player_turn and board[m][n][0] == "W") or (not player_turn and board[m][n][0].lower() == "b"):
-                    if Checkers.has_available_moves(board, letter, m, n, m + 1, n - 1):
-                        available_moves.append([board[m][n], m, n, m+1, n-1])
-                    if Checkers.has_available_moves(board, letter, m, n, m + 1, n + 1):
-                        available_moves.append([board[m][n], m, n, m+1, n+1])
-                    if Checkers.has_available_jumps(board, letter, m, n, m + 1, n - 1, m + 2, n - 2):
-                        available_jumps.append([board[m][n], m, n, m+2, n-2])
-                    if Checkers.has_available_jumps(board, letter, m, n, m + 1, n + 1, m + 2, n + 2):
-                        available_jumps.append([board[m][n], m, n, m+2, n+2])
+                    if Checkers.available_move(board, letter, m, n, m + 1, n - 1):
+                        available_moves.append([board[m][n], m, n, m + 1, n - 1])
+                    if Checkers.available_move(board, letter, m, n, m + 1, n + 1):
+                        available_moves.append([board[m][n], m, n, m + 1, n + 1])
+                    if Checkers.available_jump(board, letter, m, n, m + 1, n - 1, m + 2, n - 2):
+                        available_jumps.append([board[m][n], m, n, m + 2, n - 2])
+                    if Checkers.available_jump(board, letter, m, n, m + 1, n + 1, m + 2, n + 2):
+                        available_jumps.append([board[m][n], m, n, m + 2, n + 2])
         if mandatory_jump is False:
             available_moves += available_jumps
             return available_moves
@@ -372,17 +369,17 @@ class Checkers(object):
             return available_jumps
 
     @staticmethod
-    def has_available_moves(board, letter, m, n, new_m, new_n):
+    def available_move(board, letter, m, n, new_m, new_n):
         if new_m < 0 or new_m > 7 or new_n < 0 or new_n > 7:
             return False
         if board[m][n][0].lower() != letter:
             return False
-        if board[new_m][new_n] != "---":
+        if board[new_m][new_n] != " . ":
             return False
         return True
 
     @staticmethod
-    def has_available_jumps(board, letter, m, n, by_m, by_n, new_m, new_n):
+    def available_jump(board, letter, m, n, by_m, by_n, new_m, new_n):
         if letter.lower() == "w":
             opponent_letter = "b"
         else:
@@ -393,7 +390,7 @@ class Checkers(object):
             return False
         if board[by_m][by_n][0].lower() != opponent_letter:
             return False
-        if board[new_m][new_n] != "---":
+        if board[new_m][new_n] != " . ":
             return False
         return True
 
@@ -406,8 +403,8 @@ class Checkers(object):
             letter = "B"
         board[move[3]][move[4]] = letter + move[0][1] + move[0][2]
         if abs(move[1] - move[3]) == 2:
-            board[(move[1] + move[3]) // 2][(move[2] + move[4]) // 2] = "---"
-        board[move[1]][move[2]] = "---"
+            board[(move[1] + move[3]) // 2][(move[2] + move[4]) // 2] = " . "
+        board[move[1]][move[2]] = " . "
 
     def play(self):
         print(Color.PURPLE + "Welcome to Checkers!" + Color.RESET)
@@ -516,22 +513,22 @@ class Checkers(object):
                         continue
                     if j + 1 > 7:
                         continue
-                    if board[i][j][0].lower() == "b" and board[i+1][j+1][0].lower() == "b":
+                    if board[i][j][0].lower() == "b" and board[i + 1][j + 1][0].lower() == "b":
                         result += 3
                     if j - 1 < 0:
                         continue
-                    if board[i][j][0].lower() == "b" and board[i+1][j-1][0].lower() == "b":
+                    if board[i][j][0].lower() == "b" and board[i + 1][j - 1][0].lower() == "b":
                         result += 3
                     if i - 1 < 0:
                         continue
-                    if board[i][j][0].lower() == "b" and board[i-1][j+1][0].lower() == "---":
+                    if board[i][j][0].lower() == "b" and board[i - 1][j + 1][0].lower() == " . ":
                         result -= 3
-                        if board[i+1][j-1][0].lower() == "w":
-                            result -= 3
-                    if board[i][j][0].lower() == "b" and board[i-1][j-1][0].lower() == "---":
+                    if board[i + 1][j - 1][0].lower() == "w":
                         result -= 3
-                        if board[i+1][j+1][0].lower() == "w":
-                            result -= 3
+                    if board[i][j][0].lower() == "b" and board[i - 1][j - 1][0].lower() == " . ":
+                        result -= 3
+                    if board[i + 1][j + 1][0].lower() == "w":
+                        result -= 3
 
         return result + (computer - opponent) * 1000
 
